@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono20 • Skill Learning Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Vintage Analog Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#F7F3E9',
+                        paper: '#EFEBE0',
+                        ink: '#2B2825',
+                        brass: '#B8860B',
+                        'brass-dark': '#8B6508',
+                        terracotta: '#C85A32',
+                        slate: '#4A5568',
+                        wood: '#8C6239',
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                        typewriter: ['Courier Prime', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Tactile Paper Background */
+        body {
+            background-color: #F4F0E6;
+            background-image: 
+                radial-gradient(#d3cbbe 0.75px, transparent 0.75px),
+                radial-gradient(#d3cbbe 0.75px, #F4F0E6 0.75px);
+            background-size: 28px 28px;
+            background-position: 0 0, 14px 14px;
+            color: #2B2825;
+        }
+
+        /* Tactile Analog Button Styles */
+        .btn-tactile {
+            box-shadow: 
+                0 4px 0 0 #8B6508,
+                0 6px 12px rgba(43, 40, 37, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.1s ease;
+        }
+
+        .btn-tactile:active {
+            transform: translateY(3px);
+            box-shadow: 
+                0 1px 0 0 #8B6508,
+                0 2px 4px rgba(43, 40, 37, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-tactile-secondary {
+            box-shadow: 
+                0 3px 0 0 #475569,
+                0 4px 8px rgba(43, 40, 37, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.1s ease;
+        }
+
+        .btn-tactile-secondary:active {
+            transform: translateY(2px);
+            box-shadow: 
+                0 1px 0 0 #475569,
+                0 2px 4px rgba(43, 40, 37, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        /* Progress Ring Stroke Transition */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Analog Gauge Bezel Glow */
+        .analog-bezel {
+            box-shadow: 
+                inset 0 4px 8px rgba(0, 0, 0, 0.12),
+                inset 0 -4px 6px rgba(255, 255, 255, 0.8),
+                0 10px 25px -5px rgba(60, 50, 40, 0.12);
+        }
+
+        .card-analog {
+            box-shadow: 
+                0 4px 0 0 #D3CBBE,
+                0 6px 16px rgba(43, 40, 37, 0.08);
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #EFEBE0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #B8860B;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-3 sm:p-6 font-typewriter selection:bg-brass selection:text-white">
+
+    <!-- Header Section -->
+    <header class="w-full max-w-4xl flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 mb-6 border-b-2 border-brass/30 pb-4">
+        <div class="text-center sm:text-left">
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold tracking-wide text-ink">
+                CHRONO • 20
+            </h1>
+            <p class="text-xs text-slate-600 mt-1 font-mono uppercase tracking-widest">Skill Acquisition Tracker • The First 20 Hours</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="openNewSkillModal()" 
+                class="btn-tactile bg-brass hover:bg-brass-dark text-white font-bold py-2.5 px-5 rounded-lg text-xs uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                <span>New Skill</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl flex flex-col gap-8 my-auto">
+
+        <!-- Active Focus Hero Dial Display -->
+        <section id="heroSection" class="w-full bg-paper rounded-2xl p-6 border-2 border-brass/30 card-analog flex flex-col md:flex-row items-center justify-between gap-8">
+            
+            <!-- Analog Dial Gauge (Left / Top) -->
+            <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-cream analog-bezel border-8 border-paper flex flex-shrink-0 items-center justify-center p-4">
+                
+                <!-- SVG Gauge -->
+                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 240 240">
+                    <circle cx="120" cy="120" r="116" fill="none" stroke="#B8860B" stroke-width="1.5" stroke-opacity="0.3" />
+                    <circle cx="120" cy="120" r="102" fill="none" stroke="#DCD6C8" stroke-width="8" />
+                    <circle id="heroProgressRing" class="progress-ring__circle" cx="120" cy="120" r="102" fill="none" 
+                            stroke="#B8860B" stroke-width="8" stroke-dasharray="640.88" stroke-dashoffset="0" stroke-linecap="round" />
+                    
+                    <!-- Tick Marks -->
+                    <g stroke="#8B6508" stroke-opacity="0.3" stroke-width="1.5" stroke-linecap="round">
+                        <line x1="120" y1="24" x2="120" y2="32" />
+                        <line x1="216" y1="120" x2="208" y2="120" />
+                        <line x1="120" y1="216" x2="120" y2="208" />
+                        <line x1="24" y1="120" x2="32" y2="120" />
+                        <line x1="168" y1="37" x2="162" y2="44" />
+                        <line x1="203" y1="72" x2="196" y2="78" />
+                        <line x1="203" y1="168" x2="196" y2="162" />
+                        <line x1="168" y1="203" x2="162" y2="196" />
+                        <line x1="72" y1="203" x2="78" y2="196" />
+                        <line x1="37" y1="168" x2="44" y2="162" />
+                        <line x1="37" y1="72" x2="44" y2="78" />
+                        <line x1="72" y1="37" x2="78" y2="44" />
+                    </g>
+                </svg>
+
+                <!-- Gauge Center Text -->
+                <div class="z-10 text-center flex flex-col items-center">
+                    <div id="heroBadge" class="mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-slate/10 text-slate-700 border border-slate/20">
+                        STANDBY
+                    </div>
+                    <div id="heroTimeLeft" class="font-mono text-3xl sm:text-4xl tracking-wider text-ink font-bold my-1 select-none">
+                        20:00:00
+                    </div>
+                    <div class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">REMAINING</div>
+                    <div id="heroPercentage" class="mt-2 text-xs font-typewriter text-brass font-bold">
+                        0.0% Complete
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Skill Details & Main Controls (Right / Bottom) -->
+            <div class="flex-1 flex flex-col justify-between items-center md:items-start text-center md:text-left w-full">
+                <div>
+                    <span class="text-xs font-mono text-brass font-bold uppercase tracking-wider">Active Skill Focus</span>
+                    <h2 id="heroSkillTitle" class="text-2xl sm:text-3xl font-serif font-bold text-ink mt-1">
+                        Select a Skill
+                    </h2>
+                    <p id="heroSkillSubtitle" class="text-xs text-slate-600 mt-2 max-w-md font-typewriter leading-relaxed">
+                        Select or create a skill below to begin your 20-hour deliberate practice countdown.
+                    </p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-4 w-full max-w-md my-4 p-3 bg-cream/70 rounded-lg border border-brass/20 text-left">
+                    <div>
+                        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Time Spent</div>
+                        <div id="heroTimeSpent" class="font-mono font-bold text-base text-ink mt-0.5">00h 00m 00s</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Target Goal</div>
+                        <div id="heroTimeGoal" class="font-mono font-bold text-base text-ink mt-0.5">20h 00m 00s</div>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex flex-wrap gap-3 w-full max-w-md justify-center md:justify-start">
+                    <button id="heroToggleBtn" onclick="toggleActiveSkillTimer()" disabled
+                        class="btn-tactile opacity-50 cursor-not-allowed bg-brass hover:bg-brass-dark text-white font-bold py-3 px-6 rounded-lg tracking-wider text-xs uppercase flex items-center justify-center gap-2 transition flex-1">
+                        <svg id="heroPlayIcon" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="heroPauseIcon" class="w-4 h-4 fill-current hidden" viewBox="0 0 24 24">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                        <span id="heroToggleText">Start Practice</span>
+                    </button>
+
+                    <button id="heroResetBtn" onclick="resetActiveSkill()" disabled
+                        class="btn-tactile-secondary opacity-50 cursor-not-allowed bg-slate-700 hover:bg-slate-800 text-cream font-bold py-3 px-4 rounded-lg tracking-wider text-xs uppercase flex items-center justify-center gap-2 transition">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills List Grid -->
+        <section class="w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-serif font-bold text-ink flex items-center gap-2">
+                    <span>Your Skill Timers</span>
+                    <span id="skillsCountBadge" class="text-xs font-mono font-normal px-2 py-0.5 rounded-full bg-brass/20 text-brass-dark">0 Skills</span>
+                </h3>
+                <span class="text-xs text-slate-500 font-mono hidden sm:inline">Only one timer runs at a time • Auto-paused on close</span>
+            </div>
+
+            <!-- Cards Grid Container -->
+            <div id="skillsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Skill cards injected dynamically here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden w-full bg-paper/60 border-2 border-dashed border-brass/30 rounded-xl p-8 text-center">
+                <svg class="w-12 h-12 text-brass/50 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 10 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h4 class="font-serif text-base font-bold text-ink">No skills added yet</h4>
+                <p class="text-xs text-slate-600 mt-1 mb-4 font-typewriter">Start your 20-hour learning journey by adding your first skill goal.</p>
+                <button onclick="openNewSkillModal()" class="btn-tactile bg-brass hover:bg-brass-dark text-white font-bold py-2 px-4 rounded text-xs uppercase">
+                    + Add First Skill
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Banner -->
+    <footer class="w-full max-w-4xl text-center mt-10 mb-4 pt-4 border-t border-brass/20 text-xs text-slate-500 font-mono flex flex-col sm:flex-row justify-between items-center gap-2">
+        <span>Tactile Studio Timer System</span>
+        <span>Auto-pauses when browser window is closed or hidden</span>
+    </footer>
+
+    <!-- New / Edit Skill Modal -->
+    <div id="skillModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-paper border-2 border-brass/40 rounded-xl p-6 w-full max-w-md shadow-2xl relative">
+            <h3 id="modalTitle" class="text-xl font-serif font-bold text-ink mb-1">Add New Skill</h3>
+            <p class="text-xs text-slate-600 mb-4 font-mono">Set up your 20-hour learning target</p>
+
+            <form id="skillForm" onsubmit="handleSkillFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="skillIdInput" value="">
+                
+                <div>
+                    <label class="block text-xs font-mono text-slate-700 uppercase mb-1 font-bold">Skill Title</label>
+                    <input type="text" id="skillTitleInput" required placeholder="e.g. Guitar Fingerpicking, Spanish, Next.js" 
+                        class="w-full bg-cream border border-brass/40 rounded p-2.5 font-typewriter text-sm text-ink focus:outline-none focus:border-brass">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-mono text-slate-700 uppercase mb-1 font-bold">Target Hours Goal</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="skillHoursInput" min="1" max="100" value="20" required
+                            class="w-full bg-cream border border-brass/40 rounded p-2.5 font-mono text-lg font-bold text-ink text-center focus:outline-none focus:border-brass">
+                        <span class="text-xs text-slate-600 font-mono">Hours (Default 20h)</span>
+                    </div>
+                </div>
+
+                <div id="modalError" class="text-xs text-terracotta font-bold hidden text-center">
+                    Please provide a valid title and hour count (1-100 hours).
+                </div>
+
+                <div class="flex gap-3 pt-3">
+                    <button type="button" onclick="closeSkillModal()" 
+                        class="w-1/2 py-2.5 border border-slate-400 text-slate-700 font-bold rounded hover:bg-cream transition text-xs uppercase">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                        class="w-1/2 py-2.5 bg-brass hover:bg-brass-dark text-white font-bold rounded shadow transition text-xs uppercase">
+                        Save Skill
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const STORAGE_KEY = 'chrono20_multi_skills_v1';
+        const CIRCUMFERENCE = 2 * Math.PI * 102; // 640.88 for r=102
+
+        // State Data Model
+        let skills = [];
+        let activeSkillId = null;
+        let isRunning = false;
+        let timerInterval = null;
+
+        // DOM Element Cache
+        const heroProgressRing = document.getElementById('heroProgressRing');
+        const heroTimeLeft = document.getElementById('heroTimeLeft');
+        const heroPercentage = document.getElementById('heroPercentage');
+        const heroBadge = document.getElementById('heroBadge');
+        const heroSkillTitle = document.getElementById('heroSkillTitle');
+        const heroSkillSubtitle = document.getElementById('heroSkillSubtitle');
+        const heroTimeSpent = document.getElementById('heroTimeSpent');
+        const heroTimeGoal = document.getElementById('heroTimeGoal');
+        const heroToggleBtn = document.getElementById('heroToggleBtn');
+        const heroToggleText = document.getElementById('heroToggleText');
+        const heroPlayIcon = document.getElementById('heroPlayIcon');
+        const heroPauseIcon = document.getElementById('heroPauseIcon');
+        const heroResetBtn = document.getElementById('heroResetBtn');
+        const skillsGrid = document.getElementById('skillsGrid');
+        const emptyState = document.getElementById('emptyState');
+        const skillsCountBadge = document.getElementById('skillsCountBadge');
+        const skillModal = document.getElementById('skillModal');
+
+        window.onload = function() {
+            heroProgressRing.style.strokeDasharray = `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
+            loadState();
+
+            // Auto-pause listener on tab change, close, or blur
+            window.addEventListener('beforeunload', saveStateAndPause);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    saveStateAndPause();
+                }
+            });
+        };
+
+        // Format Seconds into HH:MM:SS
+        function formatHHMMSS(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // Format Seconds into Short Summary String (e.g., 04h 15m)
+        function formatShortTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            return `${h}h ${m}m`;
+        }
+
+        // Core Render & UI Update
+        function render() {
+            // Update Skills Count
+            skillsCountBadge.textContent = `${skills.length} ${skills.length === 1 ? 'Skill' : 'Skills'}`;
+            
+            if (skills.length === 0) {
+                emptyState.classList.remove('hidden');
+                skillsGrid.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                skillsGrid.classList.remove('hidden');
+            }
+
+            // Render Hero Section
+            const activeSkill = skills.find(s => s.id === activeSkillId);
+
+            if (activeSkill) {
+                const totalTargetSeconds = activeSkill.targetHours * 3600;
+                const elapsedSeconds = activeSkill.elapsedSeconds;
+                const remainingSeconds = Math.max(0, totalTargetSeconds - elapsedSeconds);
+                const progressPct = Math.min(100, (elapsedSeconds / totalTargetSeconds) * 100);
+
+                heroSkillTitle.textContent = activeSkill.title;
+                heroSkillSubtitle.textContent = `Targeting ${activeSkill.targetHours} hours of deliberate practice.`;
+                heroTimeLeft.textContent = formatHHMMSS(remainingSeconds);
+                heroTimeSpent.textContent = formatHHMMSS(elapsedSeconds);
+                heroTimeGoal.textContent = `${activeSkill.targetHours}h 00m 00s`;
+                heroPercentage.textContent = `${progressPct.toFixed(1)}% Completed`;
+
+                // Update Ring
+                const offset = CIRCUMFERENCE - (progressPct / 100) * CIRCUMFERENCE;
+                heroProgressRing.style.strokeDashoffset = offset;
+
+                // Enable Controls
+                heroToggleBtn.disabled = false;
+                heroToggleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                heroResetBtn.disabled = false;
+                heroResetBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                if (isRunning) {
+                    heroBadge.textContent = "COUNTING ACTIVE";
+                    heroBadge.className = "mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-brass/20 text-brass-dark border border-brass/40 animate-pulse";
+                    heroToggleText.textContent = "Pause Timer";
+                    heroPlayIcon.classList.add('hidden');
+                    heroPauseIcon.classList.remove('hidden');
+                    heroToggleBtn.className = "btn-tactile bg-terracotta hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg tracking-wider text-xs uppercase flex items-center justify-center gap-2 transition flex-1";
+                } else if (remainingSeconds === 0) {
+                    heroBadge.textContent = "SKILL MASTERED";
+                    heroBadge.className = "mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold";
+                    heroToggleText.textContent = "Completed";
+                    heroPlayIcon.classList.remove('hidden');
+                    heroPauseIcon.classList.add('hidden');
+                    heroToggleBtn.className = "btn-tactile bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-6 rounded-lg tracking-wider text-xs uppercase flex items-center justify-center gap-2 transition flex-1 opacity-80";
+                } else {
+                    heroBadge.textContent = elapsedSeconds > 0 ? "PAUSED" : "READY";
+                    heroBadge.className = elapsedSeconds > 0 
+                        ? "mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-amber-100 text-amber-800 border border-amber-300"
+                        : "mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-slate/10 text-slate-700 border border-slate/20";
+                    heroToggleText.textContent = elapsedSeconds > 0 ? "Resume Timer" : "Start Practice";
+                    heroPlayIcon.classList.remove('hidden');
+                    heroPauseIcon.classList.add('hidden');
+                    heroToggleBtn.className = "btn-tactile bg-brass hover:bg-brass-dark text-white font-bold py-3 px-6 rounded-lg tracking-wider text-xs uppercase flex items-center justify-center gap-2 transition flex-1";
+                }
+            } else {
+                // Reset Hero to standby state
+                heroSkillTitle.textContent = "Select a Skill";
+                heroSkillSubtitle.textContent = "Select or create a skill below to begin your 20-hour deliberate practice countdown.";
+                heroTimeLeft.textContent = "20:00:00";
+                heroTimeSpent.textContent = "00h 00m 00s";
+                heroTimeGoal.textContent = "20h 00m 00s";
+                heroPercentage.textContent = "0.0% Completed";
+                heroProgressRing.style.strokeDashoffset = CIRCUMFERENCE;
+                heroBadge.textContent = "STANDBY";
+                heroBadge.className = "mb-1 px-3 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-slate/10 text-slate-700 border border-slate/20";
+                heroToggleBtn.disabled = true;
+                heroToggleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                heroResetBtn.disabled = true;
+                heroResetBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            // Render Skills Cards Grid
+            renderSkillsCards();
+        }
+
+        function renderSkillsCards() {
+            skillsGrid.innerHTML = '';
+
+            skills.forEach(skill => {
+                const totalTargetSeconds = skill.targetHours * 3600;
+                const elapsedSeconds = skill.elapsedSeconds;
+                const remainingSeconds = Math.max(0, totalTargetSeconds - elapsedSeconds);
+                const pct = Math.min(100, (elapsedSeconds / totalTargetSeconds) * 100);
+                const isSelected = skill.id === activeSkillId;
+                const isSkillRunning = isSelected && isRunning;
+                const isCompleted = elapsedSeconds >= totalTargetSeconds;
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-xl border-2 transition-all card-analog bg-paper flex flex-col justify-between ${
+                    isSelected ? 'border-brass ring-1 ring-brass/30' : 'border-brass/20 hover:border-brass/40'
+                }`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                                <h4 class="font-serif font-bold text-lg text-ink line-clamp-1">${escapeHtml(skill.title)}</h4>
+                                <span class="text-[10px] font-mono text-slate-500">${skill.targetHours}-Hour Skill Target</span>
+                            </div>
+                            ${isCompleted 
+                                ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">MASTERED</span>`
+                                : isSkillRunning 
+                                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-brass/20 text-brass-dark border border-brass/40 animate-pulse">RUNNING</span>`
+                                    : `<span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-600 bg-cream border border-slate-300">${formatShortTime(remainingSeconds)} left</span>`
+                            }
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-cream rounded-full h-2.5 border border-brass/20 overflow-hidden my-3">
+                            <div class="h-full bg-brass rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+                        </div>
+
+                        <!-- Stats Row -->
+                        <div class="grid grid-cols-2 gap-2 text-xs font-mono py-2 border-y border-brass/10 mb-4">
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase block">Spent</span>
+                                <span class="font-bold text-ink">${formatShortTime(elapsedSeconds)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 uppercase block">Remaining</span>
+                                <span class="font-bold text-ink">${formatShortTime(remainingSeconds)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <button onclick="selectAndToggleSkill('${skill.id}')" 
+                            class="flex-1 py-2 px-3 rounded text-xs font-bold font-mono tracking-wider uppercase transition flex items-center justify-center gap-1.5 ${
+                                isSkillRunning 
+                                    ? 'bg-terracotta text-white hover:bg-red-700' 
+                                    : 'bg-brass text-white hover:bg-brass-dark'
+                            }">
+                            ${isSkillRunning ? 'Pause' : (isSelected ? 'Start' : 'Focus & Start')}
+                        </button>
+                        
+                        <button onclick="openEditSkillModal('${skill.id}')" title="Edit Skill"
+                            class="p-2 border border-slate-300 hover:bg-cream rounded text-slate-600 transition">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="deleteSkill('${skill.id}')" title="Delete Skill"
+                            class="p-2 border border-terracotta/30 text-terracotta hover:bg-terracotta/10 rounded transition">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                skillsGrid.appendChild(card);
+            });
+        }
+
+        // Timer Tick logic
+        function tick() {
+            if (!activeSkillId) return;
+            const skill = skills.find(s => s.id === activeSkillId);
+            if (!skill) return;
+
+            const targetSecs = skill.targetHours * 3600;
+
+            if (skill.elapsedSeconds < targetSecs) {
+                skill.elapsedSeconds += 1;
+                render();
+            } else {
+                pauseTimer();
+                render();
+            }
+        }
+
+        // Toggle Timer for Currently Active Hero Skill
+        function toggleActiveSkillTimer() {
+            if (!activeSkillId && skills.length > 0) {
+                activeSkillId = skills[0].id;
+            }
+            
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        // Select a skill from card & toggle
+        function selectAndToggleSkill(id) {
+            if (activeSkillId !== id) {
+                pauseTimer();
+                activeSkillId = id;
+                startTimer();
+            } else {
+                toggleActiveSkillTimer();
+            }
+        }
+
+        function startTimer() {
+            if (!activeSkillId) return;
+            const skill = skills.find(s => s.id === activeSkillId);
+            if (!skill) return;
+
+            if (skill.elapsedSeconds >= skill.targetHours * 3600) {
+                return; // Completed skill
+            }
+
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(tick, 1000);
+                render();
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                saveStateAndPause();
+                render();
+            }
+        }
+
+        function resetActiveSkill() {
+            if (!activeSkillId) return;
+            pauseTimer();
+            const skill = skills.find(s => s.id === activeSkillId);
+            if (skill) {
+                skill.elapsedSeconds = 0;
+                saveStateAndPause();
+                render();
+            }
+        }
+
+        function deleteSkill(id) {
+            if (activeSkillId === id) {
+                pauseTimer();
+                activeSkillId = null;
+            }
+            skills = skills.filter(s => s.id !== id);
+            if (!activeSkillId && skills.length > 0) {
+                activeSkillId = skills[0].id;
+            }
+            saveStateAndPause();
+            render();
+        }
+
+        // Persistence
+        function saveStateAndPause() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+            }
+
+            const payload = {
+                skills: skills,
+                activeSkillId: activeSkillId
+            };
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn("Could not save to localStorage", e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && Array.isArray(parsed.skills)) {
+                        skills = parsed.skills;
+                        activeSkillId = parsed.activeSkillId || (skills.length > 0 ? skills[0].id : null);
+                    }
+                } else {
+                    // Seed initial default skill if first time
+                    skills = [
+                        { id: 'skill_demo_1', title: 'Guitar Fingerpicking', targetHours: 20, elapsedSeconds: 3820 },
+                        { id: 'skill_demo_2', title: 'Spanish Conversation', targetHours: 20, elapsedSeconds: 14400 }
+                    ];
+                    activeSkillId = 'skill_demo_1';
+                    saveStateAndPause();
+                }
+            } catch (e) {
+                console.warn("Could not load from localStorage", e);
+            }
+            isRunning = false;
+            render();
+        }
+
+        // Modal Management
+        function openNewSkillModal() {
+            pauseTimer();
+            document.getElementById('modalTitle').textContent = "Add New Skill";
+            document.getElementById('skillIdInput').value = "";
+            document.getElementById('skillTitleInput').value = "";
+            document.getElementById('skillHoursInput').value = "20";
+            document.getElementById('modalError').classList.add('hidden');
+            skillModal.classList.remove('hidden');
+        }
+
+        function openEditSkillModal(id) {
+            pauseTimer();
+            const skill = skills.find(s => s.id === id);
+            if (!skill) return;
+
+            document.getElementById('modalTitle').textContent = "Edit Skill";
+            document.getElementById('skillIdInput').value = skill.id;
+            document.getElementById('skillTitleInput').value = skill.title;
+            document.getElementById('skillHoursInput').value = skill.targetHours;
+            document.getElementById('modalError').classList.add('hidden');
+            skillModal.classList.remove('hidden');
+        }
+
+        function closeSkillModal() {
+            skillModal.classList.add('hidden');
+        }
+
+        function handleSkillFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('skillIdInput').value;
+            const title = document.getElementById('skillTitleInput').value.trim();
+            const hours = parseInt(document.getElementById('skillHoursInput').value) || 20;
+
+            if (!title || hours <= 0 || hours > 100) {
+                document.getElementById('modalError').classList.remove('hidden');
+                return;
+            }
+
+            if (id) {
+                // Update Existing
+                const skill = skills.find(s => s.id === id);
+                if (skill) {
+                    skill.title = title;
+                    skill.targetHours = hours;
+                }
+            } else {
+                // Create New
+                const newSkill = {
+                    id: 'skill_' + Date.now(),
+                    title: title,
+                    targetHours: hours,
+                    elapsedSeconds: 0
+                };
+                skills.push(newSkill);
+                activeSkillId = newSkill.id;
+            }
+
+            closeSkillModal();
+            saveStateAndPause();
+            render();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>
